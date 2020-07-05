@@ -4,11 +4,13 @@
 在服务入口处初始化调用一次 InitLogger 进行初始化，会初始化全局变量 Sugar，后续服务只需使用 Sugar 变量即可进行日志记录。
 
 #### zap 和 lumberjack 库的地址：
+
 [zap](https://github.com/uber-go/zap)
+
 [lumberjack](https://github.com/natefinch/lumberjack)
 
 ##### 具体使用
-```golang
+```go
     lib.InitLogger(
         "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
         ".", // 日志记录位置
