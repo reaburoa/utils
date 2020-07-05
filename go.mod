@@ -1,4 +1,4 @@
-module github.com/reaburoa/logger
+module github.com/reaburoa/utils
 
 go 1.14
 
