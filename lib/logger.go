@@ -125,6 +125,6 @@ func setFilename(path, service string) {
 }
 
 func printOut(msg string) {
-    fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:5")))
+    fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:05")))
     fmt.Println(msg)
 }
