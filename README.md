@@ -1,21 +1,20 @@
-## 基于zap和lumberjack封装的一个日志记录库
+# 各类工具封装基础库，便于工程项目使用
 
-### 具体使用方法
-在服务入口处初始化调用一次 InitLogger 进行初始化，会初始化全局变量 Sugar，后续服务只需使用 Sugar 变量即可进行日志记录。
-
+## logger库
+### 方便配置、使用的log工具类
+### 使用
+在服务入口处初始化调用一次 InitLogger 进行初始化，初始化全局变量 Sugar，使用 Sugar 进行日志记录。
 服务运行后，每日 00:00:00 会创建新的日志文件，保证每日日志文件更新。
 
 #### zap 和 lumberjack 库的地址：
+- [zap](https://github.com/uber-go/zap)库，日志记录基础库，可以区分日志级别：debug、info、warning、error、fatal等
+- [lumberjack](https://github.com/natefinch/lumberjack)库，对日志进行自动化切分、压缩、归档、删除历史日志文件
 
-[zap](https://github.com/uber-go/zap)
-
-[lumberjack](https://github.com/natefinch/lumberjack)
-
-##### 具体使用
-提交配置信息后，即可轻松使用日志插件，使用全局 Sugar 变量可以完全使用zap提供的全部日志输出函数，无需关心历史文件删除、日志文件更新。
+##### 使用示例
+提供配置信息后，即可轻松使用日志插件，可以输出静态日志、格式化日志信息等。
 
 ```go
-    lib.InitLogger(
+    logger.InitLogger(
         "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
         "./Runtime", // 日志记录位置
         "json", // 日志格式，默认使用json格式，console表示使用console \t 分割的日志风格
@@ -28,8 +27,10 @@
     )
 
     // 记录静态字符串
-    lib.Sugar.Info("Log info")
+    logger.Sugar.Info("Log info")
 
     // 按照指定格式进行记录日志，和go的 fmt.Sprintf 格式化一致
-    lib.Sugar.Infof("sds %s", "sdd")
+    logger.Sugar.Infof("sds %s", "sdd")
+
+    logger.Sugar.Warn("Warning info ")
 ```
