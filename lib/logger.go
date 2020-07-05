@@ -82,7 +82,6 @@ func getWriter(stdout bool, logger *lumberjack.Logger) zapcore.WriteSyncer {
     } else {
         return zapcore.NewMultiWriteSyncer(zapcore.AddSync(logger))
     }
-    
 }
 
 // 获取日志编码格式
@@ -105,17 +104,20 @@ func getEncoder() zapcore.EncoderConfig {
 
 // 异步更新日志记录文件，每天创建一个新的日志文件
 func update(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire int, compress, debug, stdout bool) {
-    now := time.Now()
-    tomorrowTime := time.Now().Add(24 * time.Hour)
-    tomorrowZeroTime := time.Date(tomorrowTime.Year(), tomorrowTime.Month(), tomorrowTime.Day(), 0, 0, 0, 0, tomorrowTime.Location())
-    t := time.NewTimer(tomorrowZeroTime.Sub(now))
-    select {
-    case <-t.C:
-        printOut("Update Logger Info")
-        InitLogger(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
+    for {
+        now := time.Now()
+        tomorrowTime := time.Now().Add(24 * time.Hour)
+        tomorrowZeroTime := time.Date(tomorrowTime.Year(), tomorrowTime.Month(), tomorrowTime.Day(), 0, 0, 0, 0, tomorrowTime.Location())
+        t := time.NewTimer(tomorrowZeroTime.Sub(now))
+        select {
+        case <-t.C:
+            printOut("Update Logger Info")
+            InitLogger(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
+        }
     }
 }
 
+// 设置日志文件
 func setFilename(path, service string) {
     if path[len(path)-1:] == "/" {
         filename = fmt.Sprintf("%s%s_%s.log", path, service, time.Now().Format("20060102150405"))
@@ -124,6 +126,7 @@ func setFilename(path, service string) {
     }
 }
 
+// 向stdout中输出日志信息
 func printOut(msg string) {
     fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:05")))
     fmt.Println(msg)
