@@ -13,7 +13,8 @@
 ```go
     lib.InitLogger(
         "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
-        ".", // 日志记录位置
+        "./Runtime", // 日志记录位置
+        "json", // 日志格式，默认使用json格式，console表示使用console \t 分割的日志风格
         1, // 日志文件最大大小，单位 MB
         10, // 日志文件最多存放多长时间，单位 天
         10, // 日志文件备份保留多少个，备份文件格式 log-prefix_20200705153229-2020-07-05T15-32-30.597.log.gz
