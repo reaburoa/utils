@@ -38,9 +38,8 @@ func getLumberJackLogger(maxSize, dayExpire, backupExpire int, compress bool) *l
 // debug bool 是否开启debug
 // stdout bool 是否输出到标准输出
 func InitLogger(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire int, compress, debug, stdout bool) {
-    fmt.Println("Init Logger ...")
-    filename = fmt.Sprintf("%s/%s_%s.log", path, serviceName, time.Now().Format("20060102150405"))
-    fmt.Println(fmt.Sprintf("Logger Will Record To File %s ", filename))
+    setFilename(path, serviceName)
+    printOut(fmt.Sprintf("Init And Logger File %s ...", filename))
     lumberJackLogger := getLumberJackLogger(maxSize, dayExpire, backupExpire, compress)
     encoder := getEncoder()
     var code zapcore.Encoder
@@ -72,7 +71,7 @@ func InitLogger(serviceName, path, logStyle string, maxSize, dayExpire, backupEx
     logger := zap.New(core, caller, development, filed)
     Sugar = logger.Sugar()
     
-    fmt.Println("Logger Init Ok ...")
+    printOut("Logger Init Ok ...")
     go update(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
 }
 
@@ -112,7 +111,20 @@ func update(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire
     t := time.NewTimer(tomorrowZeroTime.Sub(now))
     select {
     case <-t.C:
-        fmt.Println(fmt.Sprintf("Update Logger At %s", time.Now().Format("2006-01-02 15:04:05")))
+        printOut("Update Logger Info")
         InitLogger(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
     }
+}
+
+func setFilename(path, service string) {
+    if path[len(path)-1:] == "/" {
+        filename = fmt.Sprintf("%s%s_%s.log", path, service, time.Now().Format("20060102150405"))
+    } else {
+        filename = fmt.Sprintf("%s/%s_%s.log", path, service, time.Now().Format("20060102150405"))
+    }
+}
+
+func printOut(msg string) {
+    fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:5")))
+    fmt.Println(msg)
 }
