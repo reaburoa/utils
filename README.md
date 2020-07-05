@@ -3,6 +3,8 @@
 ### 具体使用方法
 在服务入口处初始化调用一次 InitLogger 进行初始化，会初始化全局变量 Sugar，后续服务只需使用 Sugar 变量即可进行日志记录。
 
+服务运行后，每日 00:00:00 会创建新的日志文件，保证每日日志文件更新。
+
 #### zap 和 lumberjack 库的地址：
 
 [zap](https://github.com/uber-go/zap)
@@ -10,6 +12,8 @@
 [lumberjack](https://github.com/natefinch/lumberjack)
 
 ##### 具体使用
+提交配置信息后，即可轻松使用日志插件，使用全局 Sugar 变量可以完全使用zap提供的全部日志输出函数，无需关心历史文件删除、日志文件更新。
+
 ```go
     lib.InitLogger(
         "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
