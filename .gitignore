@@ -3,3 +3,5 @@
 main
 *.log
 *.log.gz
+go.sum
+Runtime

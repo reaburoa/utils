@@ -36,7 +36,7 @@ func getLumberJackLogger(filename string, maxSize, dayExpire, backupExpire int, 
 // debug bool 是否开启debug
 // stdout bool 是否输出到标准输出
 func InitLogger(serviceName, path string, maxSize, dayExpire, backupExpire int, compress, debug, stdout bool) {
-    filename = fmt.Sprintf("%s_%s.log", serviceName, time.Now().Format("20060102150405"))
+    filename = fmt.Sprintf("%s/%s_%s.log", path, serviceName, time.Now().Format("20060102150405"))
     lumberJackLogger := getLumberJackLogger(filename, maxSize, dayExpire, backupExpire, compress)
     encoder := getEncoder()
     
