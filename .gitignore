@@ -1,0 +1,5 @@
+.idea
+/vendor/
+main
+*.log
+*.log.gz
