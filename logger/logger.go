@@ -39,7 +39,7 @@ func getLumberJackLogger(maxSize, dayExpire, backupExpire int, compress bool) *l
 // stdout bool 是否输出到标准输出
 func InitLogger(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire int, compress, debug, stdout bool) {
     setFilename(path, serviceName)
-    printOut(fmt.Sprintf("Init And Logger File %s ...", filename))
+    printOut("Init And Logger File %s ...", filename)
     lumberJackLogger := getLumberJackLogger(maxSize, dayExpire, backupExpire, compress)
     encoder := getEncoder()
     var code zapcore.Encoder
@@ -127,7 +127,7 @@ func setFilename(path, service string) {
 }
 
 // 向stdout中输出日志信息
-func printOut(msg string) {
+func printOut(format string, param ...interface{}) {
     fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:05")))
-    fmt.Println(msg)
+    fmt.Println(fmt.Sprintf(format, param ...))
 }
