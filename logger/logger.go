@@ -120,9 +120,9 @@ func update(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire
 // 设置日志文件
 func setFilename(path, service string) {
     if path[len(path)-1:] == "/" {
-        filename = fmt.Sprintf("%s%s_%s.log", path, service, time.Now().Format("20060102150405"))
+        filename = fmt.Sprintf("%s%s_%s.log", path, service, time.Now().Format("20060102"))
     } else {
-        filename = fmt.Sprintf("%s/%s_%s.log", path, service, time.Now().Format("20060102150405"))
+        filename = fmt.Sprintf("%s/%s_%s.log", path, service, time.Now().Format("20060102"))
     }
 }
 
