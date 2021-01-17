@@ -1,50 +1,65 @@
 package http
 
 import (
-    "log"
+    "fmt"
+    "github.com/astaxie/beego/httplib"
+    "github.com/reaburoa/utils/common"
     "net/http"
-    "net/url"
+    "strings"
+    "time"
 )
 
-type RequestHttp struct {
-    url    string
-    req    *http.Request
-    params map[string][]string
-    files  map[string]string
-    resp   *http.Response
-    body   []byte
+type Servicer interface {
+    GetSrvName() string
+    GetHost() string
+    Header() map[string]string
 }
 
-func NewRequest(rawurl, method string) *RequestHttp {
-    var resp http.Response
-    u, err := url.Parse(rawurl)
+const (
+    defaultUerAgent = "Default User-Agent"
+    HttpMethodGet   = "GET"
+    HttpMethodPost  = "POST"
+)
+
+var httpTransport http.RoundTripper
+
+func SetTransport(transport *http.Transport) {
+    httpTransport = transport
+}
+
+func setHeader(req *httplib.BeegoHTTPRequest, srv Servicer) *httplib.BeegoHTTPRequest {
+    for key, val := range srv.Header() {
+        req.Header(key, val)
+    }
+    return req
+}
+
+func getReqUrl(srv Servicer, uri string) string {
+    if strings.Index(uri, "http://") >= 0 || strings.Index(uri, "https://") >= 0 {
+        return uri
+    }
+    return fmt.Sprintf("%s%s", srv.GetHost(), uri)
+}
+
+func Curl(srv Servicer, uri, method string, reqParams map[string]interface{}, connTimeout, rwTimeout time.Duration) ([]byte, error) {
+    url := getReqUrl(srv, uri)
+    req := httplib.NewBeegoRequest(url, method)
+    defaultSetting := httplib.BeegoHTTPSettings{
+        UserAgent:        defaultUerAgent,
+        Transport:        httpTransport,
+        ConnectTimeout:   connTimeout,
+        ReadWriteTimeout: rwTimeout,
+    }
+    req.Setting(defaultSetting)
+    req = setHeader(req, srv)
+    if len(reqParams) > 0 {
+        for key, val := range reqParams {
+            req.Param(key, common.Number2String(val))
+        }
+    }
+    resp, err := req.Bytes()
     if err != nil {
-        log.Println("Http:", err)
+        return nil, err
     }
-    req := http.Request{
-        URL:        u,
-        Method:     method,
-        Header:     make(http.Header),
-        Proto:      "HTTP/1.1",
-        ProtoMajor: 1,
-        ProtoMinor: 1,
-    }
-    return &RequestHttp{
-        url:    rawurl,
-        req:    &req,
-        params: map[string][]string{},
-        files:  map[string]string{},
-        resp:   &resp,
-    }
-}
-
-func Get(url string) *RequestHttp {
-    return NewRequest(url, "Get")
-}
-
-func (r *RequestHttp) byte() ([]byte, error) {
-    if r.body != nil {
-        return r.body, nil
-    }
-    return nil, nil
+    return resp, nil
 }
