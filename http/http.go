@@ -1,48 +1,44 @@
 package http
 
 import (
-    "fmt"
+    "encoding/json"
     "github.com/astaxie/beego/httplib"
     "github.com/reaburoa/utils/common"
-    "net/http"
+    "io/ioutil"
+    netHttp "net/http"
     "strings"
     "time"
 )
 
-type Servicer interface {
-    GetSrvName() string
-    GetHost() string
-    Header() map[string]string
-}
-
 const (
-    defaultUerAgent = "Default User-Agent"
+    
     HttpMethodGet   = "GET"
     HttpMethodPost  = "POST"
+    
+    RequestDataTypeJson = "json"
 )
 
-var httpTransport http.RoundTripper
+var (
+	httpTransport netHttp.RoundTripper
+    defaultUerAgent = "Default User-Agent"
+)
 
-func SetTransport(transport *http.Transport) {
+func SetTransport(transport *netHttp.Transport) {
     httpTransport = transport
 }
 
-func setHeader(req *httplib.BeegoHTTPRequest, srv Servicer) *httplib.BeegoHTTPRequest {
-    for key, val := range srv.Header() {
+func SetUserAgent(ua string) {
+    defaultUerAgent = ua
+}
+
+func setHeader(req *httplib.BeegoHTTPRequest, header map[string]string) *httplib.BeegoHTTPRequest {
+    for key, val := range header {
         req.Header(key, val)
     }
     return req
 }
 
-func getReqUrl(srv Servicer, uri string) string {
-    if strings.Index(uri, "http://") >= 0 || strings.Index(uri, "https://") >= 0 {
-        return uri
-    }
-    return fmt.Sprintf("%s%s", srv.GetHost(), uri)
-}
-
-func Curl(srv Servicer, uri, method string, reqParams map[string]interface{}, connTimeout, rwTimeout time.Duration) ([]byte, error) {
-    url := getReqUrl(srv, uri)
+func Curl(url, method string, header map[string]string, reqParams, fileList map[string]interface{}, reqType string, connTimeout, rwTimeout time.Duration) (*netHttp.Response, []byte, error) {
     req := httplib.NewBeegoRequest(url, method)
     defaultSetting := httplib.BeegoHTTPSettings{
         UserAgent:        defaultUerAgent,
@@ -51,15 +47,30 @@ func Curl(srv Servicer, uri, method string, reqParams map[string]interface{}, co
         ReadWriteTimeout: rwTimeout,
     }
     req.Setting(defaultSetting)
-    req = setHeader(req, srv)
-    if len(reqParams) > 0 {
-        for key, val := range reqParams {
-            req.Param(key, common.Number2String(val))
+    req = setHeader(req, header)
+    if strings.ToLower(reqType) == RequestDataTypeJson {
+        by, _ := json.Marshal(reqParams)
+        req = req.Body(by)
+    } else {
+        if len(reqParams) > 0 {
+            for key, val := range reqParams {
+                req.Param(key, common.Number2String(val))
+            }
         }
     }
-    resp, err := req.Bytes()
-    if err != nil {
-        return nil, err
+    if len(fileList) > 0 {
+        for f, v := range fileList {
+            req.PostFile(f, common.Number2String(v))
+        }
     }
-    return resp, nil
+    resp, err := req.DoRequest()
+    if err != nil {
+        return nil, nil, err
+    }
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return nil, nil, err
+    }
+    return resp, body, nil
 }
