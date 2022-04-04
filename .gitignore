@@ -5,3 +5,4 @@ main
 *.log.gz
 go.sum
 Runtime
+exapmles/captcha/*.jpg
