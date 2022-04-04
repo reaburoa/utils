@@ -6,7 +6,7 @@ go get -u github.com/reaburoa/utils
 ```
 
 ## logger库
-### 方便配置、使用的log工具类
+### 方便配置、使用的log工具类，可实现日志的自动化归类、分割等
 
 ### 使用
 在服务入口处初始化调用一次 InitLogger 进行初始化，初始化全局变量 Sugar，使用 Sugar 进行日志记录。
@@ -19,6 +19,7 @@ go get -u github.com/reaburoa/utils
 ##### 使用示例
 提供配置信息后，即可轻松使用日志插件，可以输出静态日志、格式化日志信息等。
 
+###### 日志库使用
 ```go
     logger.InitLogger(
         "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
@@ -39,4 +40,22 @@ go get -u github.com/reaburoa/utils
     logger.Sugar.Infof("sds %s", "sdd")
 
     logger.Sugar.Warn("Warning info ")
+```
+
+## captcha库
+### 生成图形验证码，可生成纯数字、纯字符串、字符串数字混合以及数学表达式等，方便在项目业务中使用
+
+### 使用
+- 初始化图形验证码类实例，调用者可指定图形验证码的长宽、验证码字符数、验证码字符串类型、字符大小以及图形验证码字体
+- 生成图形验证码后保存图形验证码到图片或者直接获取图片base64码进行展示，可生成jpg或者png图片
+
+###### 图形验证码生成使用
+```go
+    // 指定 生成图形验证码图片大小、字符数、验证码模型、字符大小、字体
+    cc := captcha.NewCaptcha(60, 180, 4, captcha.CaptchaModeMix, 20, "./font/RitaSmith.ttf")
+    cc.SetFontDPI(90) // 设置图形验证码清晰度
+    code, res, err := cc.GenCode() // 生成图形验证码
+    fmt.Println("genCode", code, res, err)
+    er := cc.SaveJPG("captcha.jpg", 80) // 保存生成成图片或者base64在页面中进行渲染
+    fmt.Println("SaveImage", er)
 ```
