@@ -59,3 +59,8 @@ go get -u github.com/reaburoa/utils
     er := cc.SaveJPG("captcha.jpg", 80) // 保存生成成图片或者base64在页面中进行渲染
     fmt.Println("SaveImage", er)
 ```
+
+## picture库
+### 用来进行图片处理，如图片剪切、压缩、添加水印等
+
+
