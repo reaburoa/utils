@@ -60,6 +60,56 @@ go get -u github.com/reaburoa/utils
     fmt.Println("SaveImage", er)
 ```
 
+## http库
+### 作为http请求的client客户端发起网络请求
+
+### 使用
+- http库初步提供了Get、Post的简单接口，并提供持久化的请求访问
+
+######
+```go
+    ctx := context.Background()
+    url := "https://www.baidu.com"
+    trans := &http.Transport{
+        DialContext: (&net.Dialer{
+            Timeout:   10 * time.Second,
+            KeepAlive: 45 * time.Second,
+        }).DialContext,
+        MaxIdleConns:          10000,
+        IdleConnTimeout:       60 * time.Second,
+        ExpectContinueTimeout: 5 * time.Second,
+    }
+    client, er := uHttp.NewHttpClient(ctx, url, http.MethodGet, trans)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    resp, err := client.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(resp), err)
+
+    // 或者直接Get访问URL
+    cc, er := uHttp.Get(url)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    ret, err := cc.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(ret), err)
+```
+
+### 使用
+- 初始化图形验证码类实例，调用者可指定图形验证码的长宽、验证码字符数、验证码字符串类型、字符大小以及图形验证码字体
+- 生成图形验证码后保存图形验证码到图片或者直接获取图片base64码进行展示，可生成jpg或者png图片
+
+###### 图形验证码生成使用
+```go
+    // 指定 生成图形验证码图片大小、字符数、验证码模型、字符大小、字体
+    cc := captcha.NewCaptcha(60, 180, 4, captcha.CaptchaModeMix, 20, "./font/RitaSmith.ttf")
+    cc.SetFontDPI(90) // 设置图形验证码清晰度
+    code, res, err := cc.GenCode() // 生成图形验证码
+    fmt.Println("genCode", code, res, err)
+    er := cc.SaveJPG("captcha.jpg", 80) // 保存生成成图片或者base64在页面中进行渲染
+    fmt.Println("SaveImage", er)
+```
+
 ## picture库
 ### 用来进行图片处理，如图片剪切、压缩、添加水印等
 
