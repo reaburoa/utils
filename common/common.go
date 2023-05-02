@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "reflect"
     "strconv"
+    "time"
 )
 
 func Number2String(number interface{}) string {
@@ -34,4 +35,17 @@ func Number2String(number interface{}) string {
     }
     
     return number.(string)
+}
+
+func StringToTimeByFormat(timeStr, layout string) time.Time {
+    loc, _ := time.LoadLocation("Asia/Shanghai")
+    timeObj, _ := time.ParseInLocation(layout, timeStr, loc)
+    
+    return timeObj
+}
+
+func GetTomorrowZero() time.Time {
+    tomorrow := time.Now().Add(24 * time.Hour)
+    tomorrowZero := tomorrow.Format("2006-01-02 00:00:00")
+    return StringToTimeByFormat(tomorrowZero, "2006-01-02 15:04:05")
 }

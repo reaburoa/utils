@@ -22,24 +22,25 @@ go get -u github.com/reaburoa/utils
 ###### 日志库使用
 ```go
     logger.InitLogger(
-        "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDDHHIISS.log
-        "./Runtime", // 日志记录位置
-        "json", // 日志格式，默认使用json格式，console表示使用console \t 分割的日志风格
-        1, // 日志文件最大大小，单位 MB
-        10, // 日志文件最多存放多长时间，单位 天
-        10, // 日志文件备份保留多少个，备份文件格式 log-prefix_20200705153229-2020-07-05T15-32-30.597.log.gz
-        true, // 日志文件是否压缩
-        true, // 是否开启debug
-        true, // 是否输出到标准输出
+        "log-prefix", // 服务名称，日志记录会以此参数为前缀，日志文件：log-prefix_YYYYMMDD.log
+        "./Runtime",  // 日志记录位置
+        "json",       // 日志格式，默认使用json格式，console表示使用console \t 分割的日志风格
+        1,            // 日志文件最大大小，单位 MB
+        10,           // 日志文件最多存放多长时间，单位 天
+        10,           // 日志文件备份保留多少个，备份文件格式 log-prefix_20200705153229-2020-07-05T15-32-30.597.log.gz
+        true,         // 日志文件是否压缩
+        true,         // 是否开启debug
+        false,        // 是否输出到标准输出
     )
+    for {
+        // 记录静态字符串
+        logger.Sugar.Info("Log info")
 
-    // 记录静态字符串
-    logger.Sugar.Info("Log info")
+        // 按照指定格式进行记录日志，和go的 fmt.Sprintf 格式化一致
+        logger.Sugar.Infof("sds %s", "sdd")
 
-    // 按照指定格式进行记录日志，和go的 fmt.Sprintf 格式化一致
-    logger.Sugar.Infof("sds %s", "sdd")
-
-    logger.Sugar.Warn("Warning info ")
+        logger.Sugar.Warn("Warning info ")
+    }
 ```
 
 ## captcha库
@@ -58,6 +59,41 @@ go get -u github.com/reaburoa/utils
     fmt.Println("genCode", code, res, err)
     er := cc.SaveJPG("captcha.jpg", 80) // 保存生成成图片或者base64在页面中进行渲染
     fmt.Println("SaveImage", er)
+```
+
+## http库
+### 作为http请求的client客户端发起网络请求
+
+### 使用
+- http库初步提供了Get、Post的简单接口，并提供持久化的请求访问
+
+######
+```go
+    ctx := context.Background()
+    url := "https://www.baidu.com"
+    trans := &http.Transport{
+        DialContext: (&net.Dialer{
+            Timeout:   10 * time.Second,
+            KeepAlive: 45 * time.Second,
+        }).DialContext,
+        MaxIdleConns:          10000,
+        IdleConnTimeout:       60 * time.Second,
+        ExpectContinueTimeout: 5 * time.Second,
+    }
+    client, er := uHttp.NewHttpClient(ctx, url, http.MethodGet, trans)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    resp, err := client.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(resp), err)
+
+    // 或者直接Get访问URL
+    cc, er := uHttp.Get(url)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    ret, err := cc.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(ret), err)
 ```
 
 ## picture库

@@ -1,6 +1,7 @@
 package main
 
 import (
+    "context"
     "fmt"
     uHttp "github.com/reaburoa/utils/http"
     "net"
@@ -9,8 +10,9 @@ import (
 )
 
 func main() {
-    uHttp.SetUserAgent("test ua")
-    uHttp.SetTransport(&http.Transport{
+    ctx := context.Background()
+    url := "https://www.baidu.com"
+    trans := &http.Transport{
         DialContext: (&net.Dialer{
             Timeout:   10 * time.Second,
             KeepAlive: 45 * time.Second,
@@ -18,10 +20,21 @@ func main() {
         MaxIdleConns:          10000,
         IdleConnTimeout:       60 * time.Second,
         ExpectContinueTimeout: 5 * time.Second,
-    })
-    header := map[string]string{
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36",
     }
-    resp, _, _ := uHttp.Curl("http://www.baidu.com", uHttp.HttpMethodGet, header, nil, nil, "", 1*time.Second, 5*time.Second)
-    fmt.Println(resp)
+    client, er := uHttp.NewHttpClient(ctx, url, http.MethodGet, trans)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    resp, err := client.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(resp), err)
+    
+    cc, er := uHttp.Get(url)
+    if er != nil {
+        fmt.Println("Http New Client Error ", er)
+    }
+    ret, err := cc.SetUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36").Bytes()
+    fmt.Println(string(ret), err)
+    // defer resp.Body.Close()
+    // body, er := ioutil.ReadAll(resp.Body)
+    // fmt.Println("body", string(body), er)
 }

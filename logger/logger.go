@@ -2,17 +2,20 @@ package logger
 
 import (
     "fmt"
+    "github.com/reaburoa/utils/common"
     "go.uber.org/zap"
     "go.uber.org/zap/zapcore"
     "gopkg.in/natefinch/lumberjack.v2"
     "os"
     "strings"
+    "sync"
     "time"
 )
 
 var (
     Sugar    *zap.SugaredLogger
     filename string
+    syncOnce = sync.Once{}
 )
 
 // 使用 lumberjack 库设置log归档、切分
@@ -32,8 +35,8 @@ func getLumberJackLogger(maxSize, dayExpire, backupExpire int, compress bool) *l
 // path string 日志记录位置
 // logStyle string 日志输出格式，使用json 或者 console的空格分割，默认使用 json格式
 // maxSize int 文件最大大小，达到后会自动切分文件，单位：MB
-// dayExpire int 日志文件留存多少时间，单位：天
-// backupExpire int 日志文件最多备份多少个
+// dayExpire int 日志文件留存多少时间，单位：天， 0 表示不会按照时间轮转删除旧日志文件
+// backupExpire int 日志文件最多备份多少个， 0 表示全部保留
 // compress bool 日志文件是否压缩
 // debug bool 是否开启debug
 // stdout bool 是否输出到标准输出
@@ -72,7 +75,11 @@ func InitLogger(serviceName, path, logStyle string, maxSize, dayExpire, backupEx
     Sugar = logger.Sugar()
     
     printOut("Logger Init Ok ...")
-    go update(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
+    if stdout == false {
+        syncOnce.Do(func() {
+            go update(serviceName, path, logStyle, maxSize, dayExpire, backupExpire, compress, debug, stdout)
+        })
+    }
 }
 
 // 获取日志写入目标
@@ -104,11 +111,12 @@ func getEncoder() zapcore.EncoderConfig {
 
 // 异步更新日志记录文件，每天创建一个新的日志文件
 func update(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire int, compress, debug, stdout bool) {
+    printOut("Sync Slice Log ...")
     for {
+        printOut("Start Sync Slice Log Goroutine...")
         now := time.Now()
-        tomorrowTime := time.Now().Add(24 * time.Hour)
-        tomorrowZeroTime := time.Date(tomorrowTime.Year(), tomorrowTime.Month(), tomorrowTime.Day(), 0, 0, 0, 0, tomorrowTime.Location())
-        t := time.NewTimer(tomorrowZeroTime.Sub(now))
+        tomorrowTime := common.GetTomorrowZero()
+        t := time.NewTimer(tomorrowTime.Sub(now))
         select {
         case <-t.C:
             printOut("Update Logger Info")
@@ -119,15 +127,16 @@ func update(serviceName, path, logStyle string, maxSize, dayExpire, backupExpire
 
 // 设置日志文件
 func setFilename(path, service string) {
+    format := time.Now().Format("20060102")
     if path[len(path)-1:] == "/" {
-        filename = fmt.Sprintf("%s%s_%s.log", path, service, time.Now().Format("20060102"))
+        filename = fmt.Sprintf("%s%s_%s.log", path, service, format)
     } else {
-        filename = fmt.Sprintf("%s/%s_%s.log", path, service, time.Now().Format("20060102"))
+        filename = fmt.Sprintf("%s/%s_%s.log", path, service, format)
     }
 }
 
 // 向stdout中输出日志信息
 func printOut(format string, param ...interface{}) {
     fmt.Print(fmt.Sprintf("%s ", time.Now().Format("2006/01/02 15:04:05")))
-    fmt.Println(fmt.Sprintf(format, param ...))
+    fmt.Println(fmt.Sprintf(format, param...))
 }
